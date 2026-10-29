@@ -1,1 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AU Weather Bar</title>
+</head>
+<body>
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 12px;font:600 14px sans-serif">
+    <span id="au0" style="padding:7px 14px;border-radius:99px;background:#E0F2FE;color:#0369A1">Sydney …</span>
+    <span id="au1" style="padding:7px 14px;border-radius:99px;background:#E0F2FE;color:#0369A1">Melbourne …</span>
+    <span id="au2" style="padding:7px 14px;border-radius:99px;background:#E0F2FE;color:#0369A1">Brisbane …</span>
+    <span id="au3" style="padding:7px 14px;border-radius:99px;background:#E0F2FE;color:#0369A1">Perth …</span>
+    <span id="au4" style="padding:7px 14px;border-radius:99px;background:#E0F2FE;color:#0369A1">Adelaide …</span>
 
+    <div style="margin:0 0 0 auto;display:inline-flex;align-items:center;padding:4px 6px 4px 16px;border-radius:99px;background:#FEF3C7">
+      <input id="auword" type="text" placeholder="Search this site"
+             style="border:0;background:transparent;outline:none;font:600 14px sans-serif;color:#B45309;width:140px">
+      <button id="aubtn" type="button" style="border:0;border-radius:99px;background:#B45309;color:#fff;padding:5px 12px;font:600 13px sans-serif;cursor:pointer">Search</button>
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      var N=["Sydney","Melbourne","Brisbane","Perth","Adelaide"], D=null;
+
+      function show(){
+        if(!D) return;
+        for(var i=0;i<5;i++){
+          var t=new Date(Date.now()+D[i].utc_offset_seconds*1000);
+          var h=t.getUTCHours(), m=t.getUTCMinutes();
+          var ap=h>=12?"PM":"AM";
+          h=h%12; if(h==0) h=12;
+
+          document.getElementById("au"+i).textContent =
+            N[i] + " " + Math.round(D[i].current.temperature_2m) + "°C · " +
+            h + ":" + (m<10?"0":"") + m + " " + ap + " " + D[i].timezone_abbreviation;
+        }
+      }
+
+      fetch("https://api.open-meteo.com/v1/forecast?latitude=-33.87,-37.81,-27.47,-31.95,-34.93&longitude=151.21,144.96,153.03,115.86,138.60&current=temperature_2m&timezone=auto")
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+          D = d;
+          show();
+          setInterval(show, 30000);
+        })
+        .catch(function(err){
+          console.error("Weather fetch failed:", err);
+        });
+
+      function go(){
+        var w = document.getElementById("auword").value.trim();
+        if(w){
+          window.open("https://www.google.com/search?q="+encodeURIComponent("site:luwintonline.com "+w), "_blank");
+        }
+      }
+
+      document.getElementById("aubtn").addEventListener("click", go);
+      document.getElementById("auword").addEventListener("keydown", function(e){
+        if(e.key === "Enter"){ go(); }
+      });
+    })();
+  </script>
+</body>
+</html>
